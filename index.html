@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Proyecto Tinder</title>
+  <style>
+    /* --- TU CSS MANTENIDO Y CORREGIDO --- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      display: grid;
+      place-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      background: #e5e5e5;
+      zoom: 0.6;
+    }
+
+    main {
+      background: url('./iphone.webp') no-repeat;
+      background-size: contain;
+      width: 320px;
+      height: 640px;
+      display: flex;
+      filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.3));
+    }
+
+    .screen {
+      background: #f6f6f6;
+      width: 100%;
+      border-radius: 32px;
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+      overflow: hidden;
+      position: relative;
+      padding: 16px 6px;
+      margin: 24px;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .cards {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      margin: 0 auto;
+    }
+
+    .cards > span {
+      display: grid;
+      place-content: center;
+      color: #999;
+      font-size: 14px;
+      text-align: center;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .cards article {
+      transition: transform 0.3s ease, rotate 0.3s ease;
+      will-change: transform;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      cursor: grab;
+      overflow: hidden;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+    }
+
+    .cards article.go-left {
+      transform: translateX(-150%) rotate(-30deg) !important;
+    }
+
+    .cards article.go-right {
+      transform: translateX(150%) rotate(30deg) !important;
+    }
+
+    .cards article.reset {
+      transition: transform .3s ease;
+      transform: translateX(0) !important;
+    }
+
+    .choice {
+      border-radius: 8px;
+      border: 4px solid;
+      z-index: 9999;
+      position: absolute;
+      top: 32px;
+      padding: 4px 8px;
+      font-size: 24px;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      width: fit-content;
+      opacity: 0;
+    }
+
+    .choice.nope {
+      border-color: #ff6e63;
+      color: #ff6e63;
+      right: 16px;
+      transform: rotate(30deg);
+    }
+
+    .choice.like {
+      border-color: #63ff68;
+      color: #63ff68;
+      left: 16px;
+      transform: rotate(-30deg);
+    }
+
+    .cards img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cards h2 {
+      color: white;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      padding: 16px;
+      background: linear-gradient(to top, #00000088 20%, transparent 40%);
+    }
+
+    .cards h2 span {
+      margin-left: 6px;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    footer {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      padding: 0 24px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    footer button {
+      background: url('./tinder-icons.webp') no-repeat;
+      background-size: 175px;
+      height: 32px;
+      width: 32px;
+      border-radius: 50%;
+      border: 0;
+      cursor: pointer;
+      transition: scale .3s ease;
+    }
+
+    footer button:hover {
+      scale: 1.4;
+    }
+
+    footer .is-big {
+      background-size: 250px;
+      width: 48px;
+      height: 48px;
+    }
+
+    .is-undo { background-position: -140px 0; }
+    .is-remove { background-position: -152px 0; }
+    .is-fav { background-position: -50px 0; }
+    .is-star { background-position: -70px 0; }
+
+    #user-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 90%;
+    }
+
+    #user-form input {
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #user-form button,
+    #start-btn {
+      background-color: #ff4d4d;
+      color: white;
+      padding: 10px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #user-form button:hover,
+    #start-btn:hover {
+      background-color: #ff1a1a;
+    }
+
+    #preview {
+      object-fit: cover;
+      aspect-ratio: 1/1;
+      width: 100px;
+      max-width: 100%;
+      border-radius: 8px;
+      margin: 10px auto;
+    }
+
+    .toast {
+      position: absolute;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s ease, bottom 0.3s ease;
+      z-index: 9999;
+    }
+
+    .toast.show {
+      opacity: 1;
+      bottom: 100px;
+    }
+
+    
+  </style>
+</head>
+
+<body>
+  <main>
+    <div id="toast" class="toast hidden">Mensaje aquí</div>
+
+    <section id="welcome-screen" class="screen active">
+      <h1>Bienvenido a Tinder Clone</h1>
+      <button id="start-btn">Comenzar</button>
+    </section>
+
+    <section id="form-screen" class="screen">
+      <h2>Crea tu perfil</h2>
+      <form id="user-form">
+        <label>Nombre: <input type="text" id="name" required /></label>
+        <label>Edad: <input type="number" id="age" min="18" max="99" required /></label>
+        <label>Foto: <input type="file" id="photo" accept="image/*" required /></label>
+        <img id="preview" class="hidden" />
+        <button type="submit">Guardar</button>
+      </form>
+    </section>
+
+    <section id="tinder-screen" class="screen">
+      <header><img src="/tinder-logo.webp" alt="Tinder Logo" /></header>
+      <div class="cards">
+        <article>
+          <img src="/photos/2.webp" alt="Arturo" />
+          <h2>Arturo <span>25</span></h2>
+          <div class="choice nope">NOPE</div>
+          <div class="choice like">LIKE</div>
+        </article>
+        <article>
+          <img src="/photos/1.webp" alt="Lilia" />
+          <h2>Lilia <span>27</span></h2>
+          <div class="choice nope">NOPE</div>
+          <div class="choice like">LIKE</div>
+        </article>
+        <span>No hay más personas cerca de ti...<br />Vuelve más tarde</span>
+      </div>
+      <footer>
+        <button class="is-undo" aria-label="undo"></button>
+        <button class="is-remove is-big" aria-label="remove"></button>
+        <button class="is-star" aria-label="star"></button>
+        <button class="is-fav is-big" aria-label="fav"></button>
+        <button class="is-zap" aria-label="zap"></button>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    const DECISION_THRESHOLD = 75
+    let isAnimating = false
+    let pullDeltaX = 0
+    let base64Image = ''
+
+    const welcomeScreen = document.getElementById('welcome-screen')
+    const formScreen = document.getElementById('form-screen')
+    const tinderScreen = document.getElementById('tinder-screen')
+    const startBtn = document.getElementById('start-btn')
+    const userForm = document.getElementById('user-form')
+    const photoInput = document.getElementById('photo')
+    const previewImg = document.getElementById('preview')
+    
+// Mostrar pantalla inicial
+  window.addEventListener('DOMContentLoaded', () => {
+  welcomeScreen.classList.add('active')
+  formScreen.classList.remove('active')
+  tinderScreen.classList.remove('active')
+
+  const defaultUsers = [
+    { name: 'Arturo', age: 25, image: './photos/2.webp' },
+    { name: 'Lilia', age: 27, image: './photos/1.webp' }
+  ]
+
+  let savedUsers = JSON.parse(localStorage.getItem('tinder-users'))
+
+  // Si no hay usuarios guardados, usar los por defecto y guardarlos
+  if (!savedUsers || savedUsers.length === 0) {
+    savedUsers = defaultUsers
+    localStorage.setItem('tinder-users', JSON.stringify(savedUsers))
+  }
+
+  savedUsers.forEach(addUserCardToDOM)
+})
+
+  // Botón "Comenzar"
+  startBtn.addEventListener('click', () => {
+    welcomeScreen.classList.remove('active')
+    formScreen.classList.add('active')
+  })
+
+  // Vista previa de la imagen subida
+  photoInput.addEventListener('change', (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = function (event) {
+      base64Image = event.target.result
+      previewImg.src = base64Image
+      previewImg.classList.remove('hidden')
+    }
+    reader.readAsDataURL(file)
+  })
+
+  // Envío del formulario
+  userForm.addEventListener('submit', (e) => {
+      e.preventDefault()
+      const name = document.getElementById('name').value.trim()
+      const age = parseInt(document.getElementById('age').value)
+
+      if (!name || isNaN(age) || age < 18 || !base64Image) {
+        showToast("Completa todos los campos y sube una imagen.")
+        return
+      }
+
+      const savedUsers = JSON.parse(localStorage.getItem('tinder-users')) || []
+      const alreadyExists = savedUsers.some(user => user.name.toLowerCase() === name.toLowerCase())
+      if (alreadyExists) {
+        showToast("Ese nombre ya existe. Usa otro.")
+        return
+      }
+      
+      const newUser = { name, age, image: base64Image }
+      savedUsers.push(newUser)
+      localStorage.setItem('tinder-users', JSON.stringify(savedUsers))
+      addUserCardToDOM(newUser)
+
+      formScreen.classList.remove('active')
+      tinderScreen.classList.add('active')
+      showToast(`¡Perfil creado! Empieza a deslizar, ${name}.`)
+    })
+
+  // Mostrar mensaje temporal
+    function showToast(message) {
+      const toast = document.getElementById('toast')
+      toast.textContent = message
+      toast.classList.remove('hidden')
+      toast.classList.add('show')
+      setTimeout(() => {
+        toast.classList.remove('show')
+        setTimeout(() => {
+          toast.classList.add('hidden')
+        }, 300)
+      }, 2500)
+    }
+
+  // Agregar nueva tarjeta
+  function addUserCardToDOM(user) {
+    const newCard = document.createElement('article')
+    newCard.innerHTML = `
+    <img src="${user.image}" alt="${user.name}, ${user.age} años" />
+    <h2>${user.name} <span>${user.age}</span></h2>
+    <div class="choice nope">NOPE</div>
+    <div class="choice like">LIKE</div>
+  `
+  const cardsContainer = document.querySelector('.cards')
+  cardsContainer.insertBefore(newCard, cardsContainer.firstElementChild)
+}
+
+// Swipe de tarjetas
+  function startDrag(event) {
+    if (isAnimating) return
+    const actualCard = event.target.closest('article')
+    if (!actualCard) return
+
+    const startX = event.pageX ?? event.touches[0].pageX
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onEnd)
+    document.addEventListener('touchmove', onMove, { passive: true })
+    document.addEventListener('touchend', onEnd, { passive: true })
+
+    function onMove(event) {
+      const currentX = event.pageX ?? event.touches[0].pageX
+      pullDeltaX = currentX - startX
+      if (pullDeltaX === 0) return
+
+      isAnimating = true
+      const deg = pullDeltaX / 14
+      actualCard.style.transform = `translateX(${pullDeltaX}px) rotate(${deg}deg)`
+      actualCard.style.cursor = 'grabbing'
+
+      const opacity = Math.abs(pullDeltaX) / 100
+      const isRight = pullDeltaX > 0
+      const choiceEle = isRight
+        ? actualCard.querySelector('.choice.like')
+        : actualCard.querySelector('.choice.nope')
+        choiceEle.style.opacity = opacity
+      }
+
+    function onEnd() {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onEnd)
+      document.removeEventListener('touchmove', onMove)
+      document.removeEventListener('touchend', onEnd)
+
+      const decisionMade = Math.abs(pullDeltaX) >= DECISION_THRESHOLD
+      if (decisionMade) {
+        const goRight = pullDeltaX >= 0
+        actualCard.classList.add(goRight ? 'go-right' : 'go-left')
+        actualCard.addEventListener('transitionend', () => actualCard.remove())
+        } else {
+          actualCard.classList.add('reset')
+          actualCard.classList.remove('go-right', 'go-left')
+          actualCard.querySelectorAll('.choice').forEach(c => c.style.opacity = 0)
+        }
+
+        actualCard.addEventListener('transitionend', () => {
+          actualCard.removeAttribute('style')
+          actualCard.classList.remove('reset')
+          pullDeltaX = 0
+          isAnimating = false
+        })
+      }
+    }
+
+    document.addEventListener('mousedown', startDrag)
+    document.addEventListener('touchstart', startDrag, { passive: true })
+
+  </script>
+</body>
+</html>
